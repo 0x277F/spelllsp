@@ -60,7 +60,7 @@ spell_lsp_server::spell_lsp_server(Hunspell& _hunspell)
         .add<lsp::requests::Shutdown>([&]() {
             save_local_words();
             return lsp::requests::Shutdown::Result{};
-        })
+        }).add<lsp::notifications::Exit>([&](){ is_running = false; })
         .add<lsp::requests::TextDocument_Diagnostic>([&](auto&& params) {
             return std::async(
                 std::launch::deferred,
@@ -94,7 +94,7 @@ spell_lsp_server::spell_lsp_server(Hunspell& _hunspell)
                                        return std::views::zip(std::ranges::repeat_view(corr),
                                                               corr.suggestions);
                                    })
-                                   | std::views::join | std::views::take(3)
+                                   | std::views::join | std::views::take(4)
                                    | std::views::transform([&](const auto& pair) {
                                          const auto& [corr, suggestion] = pair;
                                          lsp::Map<lsp::DocumentUri, std::vector<lsp::TextEdit>> edits;

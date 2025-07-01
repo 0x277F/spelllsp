@@ -48,7 +48,8 @@ public:
             pcre_error = pcre2_match(
                 re, std::bit_cast<PCRE2_SPTR>(text.begin()), text.size(), offset, 0, match_data, nullptr);
             if (pcre_error == PCRE2_ERROR_NOMATCH) {
-                offset = text.size();
+				match_start = match_end = offset = text.size();
+                // offset = text.size();
             } else if (pcre_error < 0) {
                 std::string msg(64, '\0');
                 pcre2_get_error_message(pcre_error, std::bit_cast<PCRE2_UCHAR*>(msg.begin()), msg.capacity());

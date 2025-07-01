@@ -23,7 +23,7 @@ vim.lsp.config['spell'] = {
 vim.lsp.enable('spell')
 ```
 
-Specifying the language `en_US` indicates that spelllsp can find a dictionary file `/usr/share/hunspell/en_US.dic` and an affix file `/usr/share/hunspell/en_US.dic`, which can be installed via the system package manager (for example, the package `extra/hunspell-en_us` on Arch Linux). 
+Specifying the language `en_US` indicates that spelllsp can find a dictionary file `/usr/share/hunspell/en_US.dic` and an affix file `/usr/share/hunspell/en_US.aff`, which can be installed via the system package manager (for example, the package `extra/hunspell-en_us` on Arch Linux). 
 
 ## Usage
 
