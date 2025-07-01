@@ -4,8 +4,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-#include "lsp/fileuri.h"
 #include "spell_lsp_server.h"
+#include "lsp/fileuri.h"
 #include <algorithm>
 #include <filesystem>
 #include <format>
@@ -22,7 +22,7 @@ spell_lsp_server::spell_lsp_server(Hunspell& _hunspell)
 
     msg_handler
         .add<lsp::requests::Initialize>([&](auto&& params) {
-            auto root_path = params.rootPath.value_or(lsp::Nullable<std::string>{ });
+            auto root_path = params.rootPath.value_or(lsp::Nullable<std::string>{});
             this->root_dir = root_path.isNull() ? "." : *root_path;
             this->local_dic = std::filesystem::absolute(std::filesystem::path{ root_dir } / ".spelling.dic");
             load_local_words();
@@ -60,7 +60,10 @@ spell_lsp_server::spell_lsp_server(Hunspell& _hunspell)
         .add<lsp::requests::Shutdown>([&]() {
             save_local_words();
             return lsp::requests::Shutdown::Result{};
-        }).add<lsp::notifications::Exit>([&](){ is_running = false; })
+        })
+        .add<lsp::notifications::Exit>([&]() {
+            is_running = false;
+        })
         .add<lsp::requests::TextDocument_Diagnostic>([&](auto&& params) {
             return std::async(
                 std::launch::deferred,
@@ -74,7 +77,8 @@ spell_lsp_server::spell_lsp_server(Hunspell& _hunspell)
                                                 }) };
                     result = report;
                     return result;
-                }, documents[params.textDocument.uri]);
+                },
+                documents[params.textDocument.uri]);
         })
         .add<lsp::requests::TextDocument_CodeAction>([&](auto&& params) {
             return std::async(
@@ -150,7 +154,7 @@ int main(int argc, char* argv[]) {
     auto dpath = std::format("/usr/share/hunspell/{}.dic", argv[1]);
 
     Hunspell hunspell{ affpath.c_str(), dpath.c_str() };
-	spell_lsp_server server{ hunspell };
+    spell_lsp_server server{ hunspell };
 
     while (server.is_running) {
         server.msg_handler.processIncomingMessages();
