@@ -4,8 +4,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-#include "spell_lsp_server.h"
 #include "lsp/fileuri.h"
+#include "spell_lsp_server.h"
 #include <algorithm>
 #include <filesystem>
 #include <format>
@@ -29,15 +29,15 @@ spell_lsp_server::spell_lsp_server(Hunspell& _hunspell)
             lsp::requests::Initialize::Result result{
                 .capabilities = { .textDocumentSync = lsp::TextDocumentSyncKind::Full,
                                   .codeActionProvider = true,
-									.executeCommandProvider = lsp::ExecuteCommandOptions{
-										.commands = std::vector{ std::string{ "spell_addlocal" } }
-									},
+                                  .executeCommandProvider = lsp::ExecuteCommandOptions{
+                                      .commands = std::vector{ std::string{ "spell_addlocal" } }
+                                  },
                                   .diagnosticProvider = lsp::
                                       DiagnosticOptions{ .interFileDependencies = false,
                                                          .workspaceDiagnostics = false,
                                                          .identifier = "spell" },
 
-								},
+                                },
                 .serverInfo = lsp::InitializeResultServerInfo{ .name = "spell" },
             };
 
