@@ -17,8 +17,9 @@
 #include <ranges>
 #include <variant>
 
-spell_lsp_server::spell_lsp_server(Hunspell& _hunspell)
-    : msg_handler{ connection }, is_running{ true }, hunspell{ _hunspell } {
+spell_lsp_server::spell_lsp_server(const std::string& dic_file, const std::string& aff_file)
+    : msg_handler{ connection }, is_running{ true },
+      hunspell{ std::make_unique<Hunspell>(dic_file.c_str(), aff_file.c_str()) } {
 
     msg_handler
         .add<lsp::requests::Initialize>([&](auto&& params) {
@@ -130,7 +131,7 @@ spell_lsp_server::spell_lsp_server(Hunspell& _hunspell)
                     }
                     return result;
                 },
-                std::move(params),
+                std::forward<lsp::CodeActionParams>(params),
                 this->documents[params.textDocument.uri]);
         })
         .add<lsp::requests::Workspace_ExecuteCommand>([&](auto&& params) {
@@ -153,8 +154,7 @@ int main(int argc, char* argv[]) {
     auto affpath = std::format("/usr/share/hunspell/{}.aff", argv[1]);
     auto dpath = std::format("/usr/share/hunspell/{}.dic", argv[1]);
 
-    Hunspell hunspell{ affpath.c_str(), dpath.c_str() };
-    spell_lsp_server server{ hunspell };
+    spell_lsp_server server{ affpath, dpath };
 
     while (server.is_running) {
         server.msg_handler.processIncomingMessages();
