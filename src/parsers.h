@@ -7,12 +7,13 @@
 #ifndef SPELLLSP_PARSERS_H
 #define SPELLLSP_PARSERS_H
 
-#include <string_view>
+#include <ctre-unicode.hpp>
 
 namespace parsers {
 // matches a string of LaTeX source and tries to capture words that need spellchecking in group 1
-static constexpr std::string_view
-    LATEX = R"((?:\\text\w\w\{?)|(?:\\[\p{L}_@]+(?:[\{\[].*[\}\]])*)|\`*((?:\p{L}(?:[\'\-]\p{L})?)+)\'*)";
+static constexpr auto latex = ctre::search_all<
+    R"((?:\\text\w\w\{?)|(?:\\[\p{L}_@]+(?:[\{\[].*[\}\]])*)|`*((?:\p{L}(?:['\-]\p{L})?)+)'*)">;
+
 } // namespace parsers
 
 #endif

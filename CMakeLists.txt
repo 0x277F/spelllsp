@@ -13,6 +13,7 @@ add_executable(spelllsp ${SPELL_LSP_HDRS} ${SPELL_LSP_SRCS})
 
 set(LSP_FRAMEWORK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/lsp-framework/")
 add_subdirectory(${LSP_FRAMEWORK_DIR})
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/compile-time-regular-expressions/")
 
-target_link_libraries(spelllsp PUBLIC lsp hunspell pcre2-8)
+target_link_libraries(spelllsp PUBLIC lsp hunspell ctre)
 

@@ -8,7 +8,6 @@
 #define SPELLLSP_SERVER_H
 
 #include "parsers.h"
-#include "pcre_iterator.h"
 #include <filesystem>
 #include <fstream>
 #include <hunspell/hunspell.hxx>
@@ -18,10 +17,6 @@
 #include <lsp/messagehandler.h>
 #include <lsp/types.h>
 #include <map>
-
-// matches a string of LaTeX source and tries to capture words that need spellchecking in group 1
-static constexpr std::string_view LATEX_TOKENIZER_PATTERN =
-    R"((?:\\text\w\w\{?)|(?:\\[\p{L}_@]+(?:[\{\[].*[\}\]])*)|\`*((?:\p{L}(?:[\'\-]\p{L})?)+)\'*)";
 
 struct correction {
     std::string text;
@@ -46,27 +41,28 @@ public:
     std::vector<correction> diagnose(const std::string_view text) {
         std::vector<correction> corrections;
         auto lines = text | std::views::split('\n') | std::views::enumerate;
-        for (const auto& [line_nr, line_range] : lines) {
-            pcre_match_results<2> results{ parsers::LATEX, std::string_view{ line_range } };
-            for (const auto& submatch : results | match_group_view{ 1 }) {
-                std::string word{ submatch.match };
-                auto col = submatch.match_offset;
-                if (!hunspell->spell(word)) {
-                    auto suggestions = hunspell->suggest(word);
-                    lsp::Diagnostic diag{
-                        .range = { .start = { .line = static_cast<uint>(line_nr),
-                                              .character = static_cast<uint>(col) },
-                                   .end = { .line = static_cast<uint>(line_nr),
-                                            .character = static_cast<uint>(col + word.size()) } },
-                        .message = suggestions.size() > 0 ? word + " -> " + suggestions[0] : word,
-                        .severity = lsp::DiagnosticSeverity::Information,
-                        .source = "(sp)"
-                    };
-                    corrections.emplace_back(std::move(word), std::move(diag), std::move(suggestions));
+        for (const auto [line_nr, line_range] : lines) {
+            std::u8string_view line{ std::bit_cast<char8_t*>(line_range.begin()), line_range.size() };
+            for (auto [m, w] : parsers::latex(line)) {
+                if (w) {
+                    auto col = std::distance(line.begin(), w.begin());
+                    std::string word{ std::bit_cast<const char*>(w.begin()), w.size() };
+                    if (!hunspell->spell(word)) {
+                        auto suggestions = hunspell->suggest(word);
+                        lsp::Diagnostic diag{
+                            .range = { .start = { .line = static_cast<uint>(line_nr),
+                                                  .character = static_cast<uint>(col) },
+                                       .end = { .line = static_cast<uint>(line_nr),
+                                                .character = static_cast<uint>(col + word.size()) } },
+                            .message = suggestions.size() > 0 ? word + " -> " + suggestions[0] : word,
+                            .severity = lsp::DiagnosticSeverity::Information,
+                            .source = "(sp)"
+                        };
+                        corrections.emplace_back(std::move(word), std::move(diag), std::move(suggestions));
+                    }
                 }
             }
         }
-
         return corrections;
     }
 

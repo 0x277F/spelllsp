@@ -4,7 +4,7 @@ A [Language Server Protocol](https://microsoft.github.io/language-server-protoco
 
 ## Building
 
-Spelllsp depends on the system libraries `libhunspell` and `libpcre2-8`, which must be installed before building. It also depends on the [lsp-framework](https://github.com/leon-bckl/lsp-framework) library, which is included as a git submodule, so make sure to run `git submodule update --init` to ensure you have an up-to-date version. To build, create a build directory, run CMake, then use CMake to build the project:
+Spelllsp depends on the system library `libhunspell`, which must be installed before building. It also depends on the wonderful libraries [lsp-framework](https://github.com/leon-bckl/lsp-framework) and [ctre](https://github.com/hanickadot/compile-time-regular-expressions), which are included as git submodules. To build, create a build directory, run CMake, then use CMake to build the project:
 
 ```bash
 $ mkdir build && cmake -B build/ && cmake --build build/
